@@ -1,1 +1,0 @@
-{"version":3,"file":"sinistro.repository.js","sourceRoot":"","sources":["../../../../../src/module/sinistros/domain/ports/sinistro.repository.js"],"names":[],"mappings":";AAAA,MAAM,sBAAsB;IACxB,MAAM;QACF,MAAM,IAAI,KAAK,CAAC,kCAAkC,CAAC,CAAC;IACxD,CAAC;IAED,MAAM,CAAC,QAAQ;QACX,MAAM,IAAI,KAAK,CAAC,kCAAkC,CAAC,CAAC;IACxD,CAAC;CACJ;AAED,MAAM,CAAC,OAAO,GAAG,EAAE,sBAAsB,EAAE,CAAC"}
