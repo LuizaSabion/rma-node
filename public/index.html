@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Zenith RMA • Garantia de Dispositivos</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header><h1>🔧 Zenith RMA <span>Central de Garantia</span></h1></header>
+    <main>
+        <section id="stats" class="stats"></section>
+
+        <div class="grid">
+            <section class="card">
+                <h2>🗂️ Abrir sinistro</h2>
+                <form id="form-sinistro">
+                    <label>Cliente
+                        <input id="cliente" placeholder="Nome do cliente" required>
+                    </label>
+                    <label>Dispositivo
+                        <input id="dispositivo" placeholder="Ex: Smartphone Zenith X200">
+                    </label>
+                    <label>Número de série
+                        <input id="numeroSerie" placeholder="Ex: SNX20099" required>
+                    </label>
+                    <label>Tipo de defeito
+                        <select id="tipoDefeito"></select>
+                    </label>
+                    <label>Descrição do defeito
+                        <textarea id="descricaoDefeito" rows="3" placeholder="Explique o problema relatado" required></textarea>
+                    </label>
+                    <button class="btn primary">Abrir sinistro</button>
+                    <p id="msg" class="msg"></p>
+                </form>
+            </section>
+
+            <section class="card wide">
+                <div class="row">
+                    <h2>📦 Fila de sinistros</h2>
+                    <select id="filtro"></select>
+                </div>
+                <div id="lista"></div>
+            </section>
+        </div>
+    </main>
+
+    <div id="modal" class="modal hidden">
+        <div class="card" id="painel"></div>
+    </div>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
