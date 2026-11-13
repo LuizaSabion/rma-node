@@ -1,0 +1,49 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum StatusSinistro {
+  ABERTO
+  EM_LABORATORIO
+  REPARADO
+  SUBSTITUIDO
+  REPROVADO
+}
+
+enum TipoDefeito {
+  TELA
+  BATERIA
+  PLACA
+  CONECTOR
+  SOFTWARE
+}
+
+// a ordem importa: o postgres ordena enum pela ordem que foi declarado,
+// entao ordenar por severidade "asc" ja traz ALTA primeiro
+enum Severidade {
+  ALTA
+  MEDIA
+  BAIXA
+}
+
+model Sinistro {
+  id               String         @id
+  cliente          String
+  dispositivo      String
+  numeroSerie      String         @map("numero_serie")
+  tipoDefeito      TipoDefeito    @map("tipo_defeito")
+  descricaoDefeito String         @map("descricao_defeito")
+  severidade       Severidade
+  status           StatusSinistro @default(ABERTO)
+  laudo            String?
+  createdAt        DateTime       @default(now()) @map("created_at")
+  updatedAt        DateTime?      @updatedAt @map("updated_at")
+
+  @@index([numeroSerie])
+  @@index([status])
+  @@map("sinistros")
+}

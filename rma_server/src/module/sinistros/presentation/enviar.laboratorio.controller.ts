@@ -1,0 +1,19 @@
+import { Controller, Inject, Param, Patch } from '@nestjs/common';
+import { SinistroResponse } from '../application/dto/sinistro.dto.response';
+import {
+  ENVIAR_LABORATORIO_USE_CASE,
+  EnviarLaboratorioUseCase,
+} from '../application/use-case/write/enviar.laboratorio.use-case';
+
+@Controller('sinistro')
+export class EnviarLaboratorioController {
+  constructor(
+    @Inject(ENVIAR_LABORATORIO_USE_CASE)
+    private readonly enviarLaboratorioUseCase: EnviarLaboratorioUseCase,
+  ) {}
+
+  @Patch(':id/enviar-laboratorio')
+  async enviarLaboratorio(@Param('id') id: string): Promise<SinistroResponse> {
+    return await this.enviarLaboratorioUseCase.execute(id);
+  }
+}
