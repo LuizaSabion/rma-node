@@ -7,6 +7,8 @@ datasource db {
 }
 
 enum StatusSinistro {
+  // ETAPA 2 - Sinistros aguardam comprovante antes da analise tecnica.
+  PENDENTE_COMPROVACAO
   ABERTO
   EM_LABORATORIO
   // ETAPA 1 - Estado intermediário exigido pelo fluxo técnico.
@@ -14,6 +16,14 @@ enum StatusSinistro {
   REPARADO
   SUBSTITUIDO
   REPROVADO
+}
+
+// ETAPA 2 - Prazos padrao acordados para cada categoria de aparelho.
+enum TipoDispositivo {
+  FONE_COM_FIO
+  CELULAR
+  FONE_BLUETOOTH
+  NOTEBOOK
 }
 
 enum TipoDefeito {
@@ -36,16 +46,40 @@ model Sinistro {
   id               String         @id
   cliente          String
   dispositivo      String
+  // ETAPA 2 - Campo opcional para preservar registros anteriores a migracao.
+  tipoDispositivo  TipoDispositivo? @map("tipo_dispositivo")
   numeroSerie      String         @map("numero_serie")
   tipoDefeito      TipoDefeito    @map("tipo_defeito")
   descricaoDefeito String         @map("descricao_defeito")
   severidade       Severidade
-  status           StatusSinistro @default(ABERTO)
+  status           StatusSinistro @default(PENDENTE_COMPROVACAO)
   laudo            String?
+  // ETAPA 2 - Uma solicitacao pode ter um comprovante de compra.
+  comprovante      ComprovanteGarantia?
+  motivoReprovacao String? @map("motivo_reprovacao")
   createdAt        DateTime       @default(now()) @map("created_at")
   updatedAt        DateTime?      @updatedAt @map("updated_at")
 
   @@index([numeroSerie])
   @@index([status])
   @@map("sinistros")
+}
+
+// ETAPA 2 - O arquivo fica no PostgreSQL, separado da listagem de sinistros.
+// Assim, consultar a fila nao transfere PDFs/fotos desnecessariamente.
+model ComprovanteGarantia {
+  id                  String   @id @default(uuid())
+  sinistroId          String   @unique @map("sinistro_id")
+  nomeArquivo         String   @map("nome_arquivo")
+  tipoMime            String   @map("tipo_mime")
+  arquivo             Bytes
+  dataCompra          DateTime @db.Date @map("data_compra")
+  numeroDocumento     String?  @map("numero_documento")
+  prazoGarantiaMeses  Int?     @map("prazo_garantia_meses")
+  dataVencimento      DateTime? @db.Date @map("data_vencimento")
+  confirmadoEm        DateTime? @map("confirmado_em")
+  anexadoEm           DateTime @default(now()) @map("anexado_em")
+  sinistro            Sinistro @relation(fields: [sinistroId], references: [id], onDelete: Cascade)
+
+  @@map("comprovantes_garantia")
 }
