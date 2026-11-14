@@ -15,7 +15,7 @@
   ],
   "settings": {
     /* --- Terminal e Ambiente Portátil --- */
-    "terminal.integrated.defaultProfile.windows": "Sistema PowerShell",
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
     "terminal.integrated.profiles.windows": {
       "Sistema PowerShell": {
         "source": "PowerShell",
