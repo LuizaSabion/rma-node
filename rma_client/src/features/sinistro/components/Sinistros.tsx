@@ -17,7 +17,7 @@ import {
 } from '@tanstack/react-table';
 import { AlertCircle, CheckCircle2, Plus, Search } from 'lucide-react';
 import { useCallback, useEffect, useMemo, useState, useTransition } from 'react';
-import { enviarLaboratorio } from '../api/sinistro.actions';
+import { concluirReparo, enviarLaboratorio } from '../api/sinistro.actions';
 import { SinistroFormData } from '../schema/sinistro.schema';
 import { Estatisticas, Feedback, InitialActionSinistroState, Sinistro, StatusSinistro } from '../type/sinistro.type';
 import { EstatisticasCards } from './EstatisticasCards';
@@ -81,6 +81,18 @@ export default function SinistrosPages({ sinistros, estatisticas }: SinistroProp
     });
   }, []);
 
+  // ETAPA 1 - Confirma a conclusão para não finalizar por clique acidental.
+  const handleConcluirReparo = useCallback((sinistro: Sinistro) => {
+    if (!window.confirm('Confirma que o reparo e os testes foram concluídos?')) return;
+    startTransition(async () => {
+      const resultado = await concluirReparo(InitialActionSinistroState, sinistro.id);
+      setFeedback({
+        type: resultado.success ? 'success' : 'error',
+        message: resultado.message ?? 'Erro ao concluir o reparo',
+      });
+    });
+  }, []);
+
   const columns = useMemo<ColumnDef<Sinistro>[]>(
     () =>
       getSinistroColumns({
@@ -88,8 +100,9 @@ export default function SinistrosPages({ sinistros, estatisticas }: SinistroProp
         onDelete: handleOpenDelete,
         onEnviarLaboratorio: handleEnviarLaboratorio,
         onLaudo: handleOpenLaudo,
+        onConcluirReparo: handleConcluirReparo,
       }),
-    [handleOpenUpdate, handleOpenDelete, handleEnviarLaboratorio, handleOpenLaudo],
+    [handleOpenUpdate, handleOpenDelete, handleEnviarLaboratorio, handleOpenLaudo, handleConcluirReparo],
   );
 
   const table = useReactTable({

@@ -12,13 +12,15 @@ export function EstatisticasCards({ dados, filtroAtual, onFiltrar }: Estatistica
     { status: 'TODOS', titulo: 'Total', valor: dados?.total ?? 0, cor: 'border-t-stone-500' },
     { status: 'ABERTO', titulo: 'Abertos', valor: dados?.abertos ?? 0, cor: 'border-t-sky-500' },
     { status: 'EM_LABORATORIO', titulo: 'Laboratório', valor: dados?.laboratorio ?? 0, cor: 'border-t-amber-500' },
+    // ETAPA 1 - Nova situação no painel, sem substituir os cartões existentes.
+    { status: 'EM_REPARO', titulo: 'Em reparo', valor: dados?.emReparo ?? 0, cor: 'border-t-indigo-500' },
     { status: 'REPARADO', titulo: 'Reparados', valor: dados?.reparados ?? 0, cor: 'border-t-emerald-500' },
     { status: 'SUBSTITUIDO', titulo: 'Substituídos', valor: dados?.substituidos ?? 0, cor: 'border-t-violet-500' },
     { status: 'REPROVADO', titulo: 'Reprovados', valor: dados?.reprovados ?? 0, cor: 'border-t-rose-500' },
   ];
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
       {itens.map((item) => (
         <button
           key={item.status}

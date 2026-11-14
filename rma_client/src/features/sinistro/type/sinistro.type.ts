@@ -1,6 +1,7 @@
 import { SinistroFormData } from '../schema/sinistro.schema';
 
-export type StatusSinistro = 'ABERTO' | 'EM_LABORATORIO' | 'REPARADO' | 'SUBSTITUIDO' | 'REPROVADO';
+// ETAPA 1 - Novo estado sincronizado com API e Prisma.
+export type StatusSinistro = 'ABERTO' | 'EM_LABORATORIO' | 'EM_REPARO' | 'REPARADO' | 'SUBSTITUIDO' | 'REPROVADO';
 export type TipoDefeito = 'TELA' | 'BATERIA' | 'PLACA' | 'CONECTOR' | 'SOFTWARE';
 export type Severidade = 'ALTA' | 'MEDIA' | 'BAIXA';
 
@@ -23,6 +24,7 @@ export type Estatisticas = {
   total: number;
   abertos: number;
   laboratorio: number;
+  emReparo: number;
   reparados: number;
   substituidos: number;
   reprovados: number;
@@ -63,6 +65,7 @@ export const InitialActionSinistroState: ActionState<Sinistro> = {
 export const NOMES_STATUS: Record<StatusSinistro, string> = {
   ABERTO: 'Aberto',
   EM_LABORATORIO: 'No laboratório',
+  EM_REPARO: 'Em reparo',
   REPARADO: 'Reparado',
   SUBSTITUIDO: 'Substituído',
   REPROVADO: 'Reprovado',

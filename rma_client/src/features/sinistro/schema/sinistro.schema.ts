@@ -18,7 +18,8 @@ export const sinistroSchema = z.object({
 export type SinistroFormData = z.infer<typeof sinistroSchema>;
 
 export const laudoSchema = z.object({
-  decisao: z.enum(['REPARADO', 'SUBSTITUIDO', 'REPROVADO'], {
+  // ETAPA 1 - O laudo inicial pode iniciar um reparo; a conclusão é outra ação.
+  decisao: z.enum(['EM_REPARO', 'SUBSTITUIDO', 'REPROVADO'], {
     message: 'Escolha a decisão do laudo',
   }),
   laudo: z.string().trim().min(10, 'Escreva o laudo com pelo menos 10 caracteres.'),

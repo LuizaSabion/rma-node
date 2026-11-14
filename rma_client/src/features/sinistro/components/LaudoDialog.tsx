@@ -19,7 +19,8 @@ import { InitialActionSinistroState, SinistroActionDialogProps } from '../type/s
 import { SeveridadeTag, StatusBadge } from './StatusBadge';
 
 const DECISOES = [
-  { valor: 'REPARADO', titulo: 'Reparar', texto: 'Conserto em bancada e devolução da mesma unidade.' },
+  // ETAPA 1 - Selecionar reparar inicia EM_REPARO. Não conclui a manutenção.
+  { valor: 'EM_REPARO', titulo: 'Iniciar reparo', texto: 'Laudo inicial emitido; aparelho entra em manutenção.' },
   { valor: 'SUBSTITUIDO', titulo: 'Substituir', texto: 'Envio de uma unidade nova para o cliente.' },
   { valor: 'REPROVADO', titulo: 'Reprovar', texto: 'Defeito não coberto pela garantia (mau uso, queda...).' },
 ] as const;
@@ -43,7 +44,7 @@ export function LaudoDialog({ isOpen, onOpenChange, sinistro, onFeedback }: Sini
 
     if (state.success) {
       onOpenChange(false);
-      // backend trocou pra substituido (limite de reparos)
+      // ETAPA 1 - Mantém o aviso de substituição automática por limite de reparos.
       const decisao = form.getValues('decisao');
       if (state.data && state.data.status !== decisao) {
         onFeedback({ type: 'success', message: 'Aparelho já teve muitos reparos: virou substituição automática.' });
@@ -131,7 +132,7 @@ export function LaudoDialog({ isOpen, onOpenChange, sinistro, onFeedback }: Sini
                     {...field}
                     id="laudo"
                     rows={3}
-                    placeholder="O que foi encontrado e o que foi feito"
+                    placeholder="Relate os testes iniciais, diagnóstico e serviço recomendado"
                     aria-invalid={fieldState.invalid}
                   />
                   {fieldState.invalid && <FieldError errors={[fieldState.error]} />}

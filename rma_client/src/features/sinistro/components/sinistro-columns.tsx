@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { ColumnDef } from '@tanstack/react-table';
-import { ArrowUpDown, ClipboardCheck, FileText, FlaskConical, PencilIcon, Trash2 } from 'lucide-react';
+import { ArrowUpDown, ClipboardCheck, FileText, FlaskConical, PencilIcon, Trash2, Wrench } from 'lucide-react';
 import { Sinistro } from '../type/sinistro.type';
 import { SeveridadeTag, StatusBadge } from './StatusBadge';
 
@@ -9,6 +9,8 @@ interface SinistroColumnsProps {
   onDelete: (sinistro: Sinistro) => void;
   onEnviarLaboratorio: (sinistro: Sinistro) => void;
   onLaudo: (sinistro: Sinistro) => void;
+  // ETAPA 1 - Ação separada de finalização do reparo.
+  onConcluirReparo: (sinistro: Sinistro) => void;
 }
 
 function formatarData(iso: string) {
@@ -26,6 +28,7 @@ export const getSinistroColumns = ({
   onDelete,
   onEnviarLaboratorio,
   onLaudo,
+  onConcluirReparo,
 }: SinistroColumnsProps): ColumnDef<Sinistro>[] => [
   {
     accessorKey: 'id',
@@ -95,6 +98,7 @@ export const getSinistroColumns = ({
       const sinistro = row.original;
       const aberto = sinistro.status === 'ABERTO';
       const noLaboratorio = sinistro.status === 'EM_LABORATORIO';
+      const emReparo = sinistro.status === 'EM_REPARO';
 
       return (
         <div className="flex justify-end gap-1 whitespace-nowrap">
@@ -118,12 +122,18 @@ export const getSinistroColumns = ({
               <ClipboardCheck /> Laudo
             </Button>
           )}
+          {/* ETAPA 1 - Só é possível concluir reparos que estejam EM_REPARO. */}
+          {emReparo && (
+            <Button variant="secondary" size="sm" onClick={() => onConcluirReparo(sinistro)}>
+              <Wrench /> Concluir reparo
+            </Button>
+          )}
           {!aberto && !noLaboratorio && (
             <Button variant="ghost" size="icon" title="Ver laudo" onClick={() => onLaudo(sinistro)}>
               <FileText />
             </Button>
           )}
-          {!noLaboratorio && (
+          {!noLaboratorio && !emReparo && (
             <Button
               variant="ghost"
               size="icon"

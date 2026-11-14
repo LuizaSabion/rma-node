@@ -64,6 +64,11 @@ export async function enviarLaboratorio(prevState: ActionState, id: string): Pro
   return enviar(`${API_URL}/${id}/enviar-laboratorio`, 'PATCH', 'Aparelho enviado ao laboratório');
 }
 
+// ETAPA 1 - A conclusão possui uma ação própria, sem enviar status arbitrário.
+export async function concluirReparo(prevState: ActionState, id: string): Promise<ActionState<Sinistro>> {
+  return enviar(`${API_URL}/${id}/concluir-reparo`, 'PATCH', 'Reparo concluído com sucesso');
+}
+
 export async function emitirLaudo(
   prevState: ActionState,
   payload: { id: string; laudo: LaudoFormData },
