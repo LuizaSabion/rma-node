@@ -9,6 +9,8 @@ datasource db {
 enum StatusSinistro {
   ABERTO
   EM_LABORATORIO
+  // ETAPA 1 - Estado intermediário exigido pelo fluxo técnico.
+  EM_REPARO
   REPARADO
   SUBSTITUIDO
   REPROVADO

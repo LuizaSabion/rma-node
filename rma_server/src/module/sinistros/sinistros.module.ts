@@ -3,6 +3,7 @@ import { PrismaModule } from '../../database/prisma.module';
 import { EstatisticasSinistroService } from './application/service/read/estatisticas.sinistro.service';
 import { FindAllSinistroService } from './application/service/read/findall.sinistro.service';
 import { FindByIdSinistroService } from './application/service/read/findbyid.sinistro.service';
+import { ConcluirReparoService } from './application/service/write/concluir.reparo.service';
 import { CreateSinistroService } from './application/service/write/create.sinistro.service';
 import { DeleteSinistroService } from './application/service/write/delete.sinistro.service';
 import { EmitirLaudoService } from './application/service/write/emitir.laudo.service';
@@ -11,6 +12,7 @@ import { UpdateSinistroService } from './application/service/write/update.sinist
 import { ESTATISTICAS_SINISTRO_USE_CASE } from './application/use-case/read/estatisticas.sinistro.use-case';
 import { FIND_ALL_SINISTRO_USE_CASE } from './application/use-case/read/findall.sinistro.use-case';
 import { FIND_BY_ID_SINISTRO_USE_CASE } from './application/use-case/read/findbyid.sinistro.use-case';
+import { CONCLUIR_REPARO_USE_CASE } from './application/use-case/write/concluir.reparo.use-case';
 import { CREATE_SINISTRO_USE_CASE } from './application/use-case/write/create.sinistro.use-case';
 import { DELETE_SINISTRO_USE_CASE } from './application/use-case/write/delete.sinistro.use-case';
 import { EMITIR_LAUDO_USE_CASE } from './application/use-case/write/emitir.laudo.use-case';
@@ -20,6 +22,7 @@ import { SINISTRO_READ_REPOSITORY } from './domain/ports/sinistro.read.repositor
 import { SINISTRO_WRITE_REPOSITORY } from './domain/ports/sinistro.write.repository';
 import { SinistroPrismaReadRepository } from './infrastructure/adapters/sinistro.prisma.read.repository';
 import { SinistroPrismaWriteRepository } from './infrastructure/adapters/sinistro.prisma.write.repository';
+import { ConcluirReparoController } from './presentation/concluir.reparo.controller';
 import { CreateSinistroController } from './presentation/create.sinistro.controller';
 import { DeleteSinistroController } from './presentation/delete.sinistro.controller';
 import { EmitirLaudoController } from './presentation/emitir.laudo.controller';
@@ -39,6 +42,8 @@ const sinistroControllers = [
   DeleteSinistroController,
   EnviarLaboratorioController,
   EmitirLaudoController,
+  // ETAPA 1 - Rota específica para a conclusão do reparo.
+  ConcluirReparoController,
 ];
 
 const sinistroProviders = [
@@ -50,6 +55,8 @@ const sinistroProviders = [
   { provide: DELETE_SINISTRO_USE_CASE, useClass: DeleteSinistroService },
   { provide: ENVIAR_LABORATORIO_USE_CASE, useClass: EnviarLaboratorioService },
   { provide: EMITIR_LAUDO_USE_CASE, useClass: EmitirLaudoService },
+  // ETAPA 1 - Registra o novo caso de uso sem criar outro módulo.
+  { provide: CONCLUIR_REPARO_USE_CASE, useClass: ConcluirReparoService },
   { provide: SINISTRO_READ_REPOSITORY, useClass: SinistroPrismaReadRepository },
   { provide: SINISTRO_WRITE_REPOSITORY, useClass: SinistroPrismaWriteRepository },
 ];

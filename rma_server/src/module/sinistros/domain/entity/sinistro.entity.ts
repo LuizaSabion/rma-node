@@ -3,7 +3,7 @@ import { BaseEntity, DefaulTimeStampsProps } from '../../../../shared/domain/ent
 import { RegraNegocioError } from '../../../../shared/domain/errors/domain.errors';
 import { NumeroSerie } from '../value-objects/numero-serie.value.object';
 import { Severidade } from '../value-objects/severidade.value.object';
-import { Status } from '../value-objects/status.value.object';
+import { Status, SinistroStatusEnum } from '../value-objects/status.value.object';
 import { TipoDefeito } from '../value-objects/tipo-defeito.value.object';
 
 // limite de reparos do mesmo aparelho, depois disso vira troca
@@ -94,11 +94,14 @@ export class SinistroEntity extends BaseEntity<SinistroProps> {
     this.props.severidade = dados.severidade ? Severidade.create(dados.severidade) : tipoDefeito.severidadePadrao();
   }
 
+  // ETAPA 1 - A entidade centraliza a mudança de status; nenhum serviço altera diretamente a propriedade.
+  private transicionarPara(proximo: Status): void {
+    this.props.status.validarTransicaoPara(proximo);
+    this.props.status = proximo;
+  }
+
   enviarParaLaboratorio(): void {
-    if (!this.props.status.isAberto()) {
-      throw new RegraNegocioError('Só é possível enviar ao laboratório sinistros que estão abertos.');
-    }
-    this.props.status = Status.emLaboratorio();
+    this.transicionarPara(Status.emLaboratorio());
   }
 
   emitirLaudo(decisao: string, laudo: string, reparosAnteriores: number): void {
@@ -114,19 +117,30 @@ export class SinistroEntity extends BaseEntity<SinistroProps> {
     let statusFinal = Status.decisao(decisao);
     let textoFinal = texto;
 
-    // ja foi reparado 2x -> substitui
-    if (statusFinal.isReparado() && reparosAnteriores >= LIMITE_REPAROS) {
+    // ETAPA 1 - Preservamos a regra existente de substituição por excesso de reparos.
+    // Agora, a decisão de reparar inicia EM_REPARO, não conclui como REPARADO.
+    if (statusFinal.value === SinistroStatusEnum.EM_REPARO && reparosAnteriores >= LIMITE_REPAROS) {
       statusFinal = Status.substituido();
       textoFinal += ` (substituição automática: aparelho já passou por ${reparosAnteriores} reparos)`;
     }
 
-    this.props.status = statusFinal;
+    // ETAPA 1 - A transição só acontece após validar o laudo e a matriz de estados.
+    this.transicionarPara(statusFinal);
     this.props.laudo = textoFinal;
   }
 
+  // ETAPA 1 - A conclusão é uma ação distinta do laudo inicial.
+  concluirReparo(): void {
+    if (!this.props.laudo || this.props.laudo.trim().length < 10) {
+      throw new RegraNegocioError('Não é possível concluir reparo sem laudo técnico inicial.');
+    }
+    this.transicionarPara(Status.reparado());
+  }
+
   validarExclusao(): void {
-    if (this.props.status.isEmLaboratorio()) {
-      throw new RegraNegocioError('Não é possível excluir um sinistro que está no laboratório.');
+    // ETAPA 1 - Estende o bloqueio existente para a nova etapa EM_REPARO.
+    if (this.props.status.isEmLaboratorio() || this.props.status.isEmReparo()) {
+      throw new RegraNegocioError('Não é possível excluir um sinistro em laboratório ou em reparo.');
     }
   }
 

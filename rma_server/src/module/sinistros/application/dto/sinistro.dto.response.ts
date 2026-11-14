@@ -21,6 +21,8 @@ export class EstatisticasResponse {
   total!: number;
   abertos!: number;
   laboratorio!: number;
+  // ETAPA 1 - Novo estado aparece também no resumo.
+  emReparo!: number;
   reparados!: number;
   substituidos!: number;
   reprovados!: number;
