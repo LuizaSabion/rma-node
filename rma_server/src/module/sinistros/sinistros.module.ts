@@ -9,6 +9,9 @@ import { DeleteSinistroService } from './application/service/write/delete.sinist
 import { EmitirLaudoService } from './application/service/write/emitir.laudo.service';
 import { EnviarLaboratorioService } from './application/service/write/enviar.laboratorio.service';
 import { UpdateSinistroService } from './application/service/write/update.sinistro.service';
+// ETAPA 2 - Novo caso de uso somente para o comprovante, sem criar modulo extra.
+import { ComprovanteGarantiaService } from './application/service/write/comprovante.garantia.service';
+import { ComprovanteGarantiaController } from './presentation/comprovante.garantia.controller';
 import { ESTATISTICAS_SINISTRO_USE_CASE } from './application/use-case/read/estatisticas.sinistro.use-case';
 import { FIND_ALL_SINISTRO_USE_CASE } from './application/use-case/read/findall.sinistro.use-case';
 import { FIND_BY_ID_SINISTRO_USE_CASE } from './application/use-case/read/findbyid.sinistro.use-case';
@@ -44,6 +47,8 @@ const sinistroControllers = [
   EmitirLaudoController,
   // ETAPA 1 - Rota específica para a conclusão do reparo.
   ConcluirReparoController,
+  // ETAPA 2 - Rotas de upload e conferencia humana da garantia.
+  ComprovanteGarantiaController,
 ];
 
 const sinistroProviders = [
@@ -57,6 +62,7 @@ const sinistroProviders = [
   { provide: EMITIR_LAUDO_USE_CASE, useClass: EmitirLaudoService },
   // ETAPA 1 - Registra o novo caso de uso sem criar outro módulo.
   { provide: CONCLUIR_REPARO_USE_CASE, useClass: ConcluirReparoService },
+  ComprovanteGarantiaService,
   { provide: SINISTRO_READ_REPOSITORY, useClass: SinistroPrismaReadRepository },
   { provide: SINISTRO_WRITE_REPOSITORY, useClass: SinistroPrismaWriteRepository },
 ];

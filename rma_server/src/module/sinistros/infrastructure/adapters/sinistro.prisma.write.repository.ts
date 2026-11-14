@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../database/prisma.service';
 import { SinistroEntity } from '../../domain/entity/sinistro.entity';
-import { SinistroWriteRepository } from '../../domain/ports/sinistro.write.repository';
-import { SinistroMapper } from '../mappers/sinistro.mappers';
+import { ArquivoComprovante, SinistroWriteRepository } from '../../domain/ports/sinistro.write.repository';
+
+import { SinistroMapper, comprovanteResumoSelect } from '../mappers/sinistro.mappers';
 
 @Injectable()
 export class SinistroPrismaWriteRepository implements SinistroWriteRepository {
@@ -21,6 +22,62 @@ export class SinistroPrismaWriteRepository implements SinistroWriteRepository {
       data,
     });
     return SinistroMapper.toSinistroEntityFromSinistroPrisma(sinistroUpdate);
+  }
+
+  // ETAPA 2 - Documento e status sao persistidos juntos.
+  async anexarComprovante(id: string, entidade: SinistroEntity, arquivo: ArquivoComprovante): Promise<SinistroEntity> {
+    const documento = entidade.props.comprovante!;
+    await this.prisma.$transaction(async (tx) => {
+      await tx.comprovanteGarantia.upsert({
+        where: { sinistroId: id },
+        create: {
+          sinistroId: id,
+          nomeArquivo: arquivo.nomeArquivo,
+          tipoMime: arquivo.tipoMime,
+          arquivo: arquivo.conteudo,
+          dataCompra: documento.dataCompra,
+          numeroDocumento: documento.numeroDocumento,
+        },
+        update: {
+          nomeArquivo: arquivo.nomeArquivo,
+          tipoMime: arquivo.tipoMime,
+          arquivo: arquivo.conteudo,
+          dataCompra: documento.dataCompra,
+          numeroDocumento: documento.numeroDocumento,
+          prazoGarantiaMeses: null,
+          dataVencimento: null,
+          confirmadoEm: null,
+        },
+      });
+      await tx.sinistro.update({ where: { id }, data: { status: entidade.props.status.value } });
+    });
+    const salvo = await this.prisma.sinistro.findUniqueOrThrow({
+      where: { id }, include: { comprovante: { select: comprovanteResumoSelect } },
+    });
+    return SinistroMapper.toSinistroEntityFromSinistroPrisma(salvo);
+  }
+
+  // ETAPA 2 - Garantia conferida, prazo calculado e decisao atualizados na mesma transacao.
+  async confirmarGarantia(id: string, entidade: SinistroEntity): Promise<SinistroEntity> {
+    const doc = entidade.props.comprovante!;
+    await this.prisma.$transaction(async (tx) => {
+      await tx.comprovanteGarantia.update({
+        where: { sinistroId: id },
+        data: {
+          prazoGarantiaMeses: doc.prazoGarantiaMeses,
+          dataVencimento: doc.dataVencimento,
+          confirmadoEm: doc.confirmadoEm,
+        },
+      });
+      await tx.sinistro.update({
+        where: { id },
+        data: { status: entidade.props.status.value, motivoReprovacao: entidade.props.motivoReprovacao },
+      });
+    });
+    const salvo = await this.prisma.sinistro.findUniqueOrThrow({
+      where: { id }, include: { comprovante: { select: comprovanteResumoSelect } },
+    });
+    return SinistroMapper.toSinistroEntityFromSinistroPrisma(salvo);
   }
 
   async deleteSinistro(id: string): Promise<void> {

@@ -16,6 +16,8 @@ export class EstatisticasSinistroService implements EstatisticasSinistroUseCase 
     return {
       total: Object.values(qtd).reduce((soma, n) => soma + n, 0),
       abertos: qtd.ABERTO,
+      // ETAPA 2 - Total aguardando comprovacao.
+      pendentes: qtd.PENDENTE_COMPROVACAO,
       laboratorio: qtd.EM_LABORATORIO,
       // ETAPA 1 - Inclui EM_REPARO nas estatísticas.
       emReparo: qtd.EM_REPARO,

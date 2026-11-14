@@ -6,6 +6,15 @@ export class SinistroResponse {
   id!: string;
   cliente!: string;
   dispositivo!: string;
+  // ETAPA 2 - Sem bytes no retorno: apenas dados necessarios para a tela.
+  tipoDispositivo!: string | null;
+  comprovanteAnexado!: boolean;
+  comprovanteNome!: string | null;
+  comprovanteConferidoEm!: Date | null;
+  dataCompra!: Date | null;
+  dataVencimento!: Date | null;
+  prazoGarantiaMeses!: number | null;
+  motivoReprovacao!: string | null;
   numeroSerie!: string;
   tipoDefeito!: TipoDefeitoEnum;
   tipoDefeitoNome!: string;
@@ -20,6 +29,7 @@ export class SinistroResponse {
 export class EstatisticasResponse {
   total!: number;
   abertos!: number;
+  pendentes!: number;
   laboratorio!: number;
   // ETAPA 1 - Novo estado aparece também no resumo.
   emReparo!: number;

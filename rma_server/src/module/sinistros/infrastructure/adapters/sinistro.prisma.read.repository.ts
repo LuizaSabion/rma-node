@@ -3,7 +3,7 @@ import { PrismaService } from '../../../../database/prisma.service';
 import { SinistroEntity } from '../../domain/entity/sinistro.entity';
 import { SinistroReadRepository } from '../../domain/ports/sinistro.read.repository';
 import { SinistroStatusEnum } from '../../domain/value-objects/status.value.object';
-import { SinistroMapper } from '../mappers/sinistro.mappers';
+import { SinistroMapper, comprovanteResumoSelect } from '../mappers/sinistro.mappers';
 
 @Injectable()
 export class SinistroPrismaReadRepository implements SinistroReadRepository {
@@ -12,6 +12,7 @@ export class SinistroPrismaReadRepository implements SinistroReadRepository {
   async findSinistroAll(status?: SinistroStatusEnum): Promise<SinistroEntity[]> {
     const sinistros = await this.prisma.sinistro.findMany({
       where: status ? { status } : {},
+      include: { comprovante: { select: comprovanteResumoSelect } },
       // ALTA primeiro, depois os mais antigos
       orderBy: [{ severidade: 'asc' }, { createdAt: 'asc' }],
     });
@@ -19,7 +20,7 @@ export class SinistroPrismaReadRepository implements SinistroReadRepository {
   }
 
   async findSinistroById(id: string): Promise<SinistroEntity | null> {
-    const sinistro = await this.prisma.sinistro.findUnique({ where: { id } });
+    const sinistro = await this.prisma.sinistro.findUnique({ where: { id }, include: { comprovante: { select: comprovanteResumoSelect } } });
     return sinistro ? SinistroMapper.toSinistroEntityFromSinistroPrisma(sinistro) : null;
   }
 

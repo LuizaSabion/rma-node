@@ -2,6 +2,8 @@ import { RegraNegocioError } from '../../../../shared/domain/errors/domain.error
 import { ValueObjects } from '../../../../shared/domain/value.objects/value.objects';
 
 export enum SinistroStatusEnum {
+  // ETAPA 2 - Falta comprovante validado para seguir ao laboratorio.
+  PENDENTE_COMPROVACAO = 'PENDENTE_COMPROVACAO',
   ABERTO = 'ABERTO',
   EM_LABORATORIO = 'EM_LABORATORIO',
   // ETAPA 1 - Novo estado: laudo inicial aprovado e conserto em andamento.
@@ -22,7 +24,9 @@ export const DECISOES_LAUDO = [
 // A reavaliação EM_REPARO -> EM_LABORATORIO será liberada junto ao Audit Log,
 // pois precisará preservar motivo, autor e todos os laudos anteriores.
 const TRANSICOES: Record<SinistroStatusEnum, readonly SinistroStatusEnum[]> = {
-  [SinistroStatusEnum.ABERTO]: [SinistroStatusEnum.EM_LABORATORIO],
+  // ETAPA 2 - Comprovante recebido ou reprovacao automatica pela vigencia.
+  [SinistroStatusEnum.PENDENTE_COMPROVACAO]: [SinistroStatusEnum.ABERTO, SinistroStatusEnum.REPROVADO],
+  [SinistroStatusEnum.ABERTO]: [SinistroStatusEnum.PENDENTE_COMPROVACAO, SinistroStatusEnum.EM_LABORATORIO, SinistroStatusEnum.REPROVADO],
   [SinistroStatusEnum.EM_LABORATORIO]: [
     SinistroStatusEnum.EM_REPARO,
     SinistroStatusEnum.SUBSTITUIDO,
@@ -62,6 +66,11 @@ export class Status extends ValueObjects<SinistroStatusEnum> {
     return status;
   }
 
+  // ETAPA 2 - Todo novo cadastro aguarda documento; sinistros antigos mantem ABERTO.
+  static pendenteComprovacao(): Status {
+    return new Status(SinistroStatusEnum.PENDENTE_COMPROVACAO);
+  }
+
   static aberto(): Status {
     return new Status(SinistroStatusEnum.ABERTO);
   }
@@ -85,6 +94,10 @@ export class Status extends ValueObjects<SinistroStatusEnum> {
 
   static substituido(): Status {
     return new Status(SinistroStatusEnum.SUBSTITUIDO);
+  }
+
+  isPendenteComprovacao(): boolean {
+    return this.value === SinistroStatusEnum.PENDENTE_COMPROVACAO;
   }
 
   isAberto(): boolean {
