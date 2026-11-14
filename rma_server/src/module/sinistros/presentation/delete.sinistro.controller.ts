@@ -1,9 +1,13 @@
 import { Controller, Delete, HttpCode, Inject, Param } from '@nestjs/common';
+// ETAPA 3 - Bloqueio RBAC no backend, nunca apenas no botao da tela.
+import { PerfilUsuario } from '@prisma/client';
+import { Perfis, UsuarioAtual, UsuarioAutenticado } from '../../auth/auth.roles';
 import {
   DELETE_SINISTRO_USE_CASE,
   DeleteSinistroUseCase,
 } from '../application/use-case/write/delete.sinistro.use-case';
 
+@Perfis(PerfilUsuario.ATENDENTE)
 @Controller('sinistro')
 export class DeleteSinistroController {
   constructor(

@@ -1,23 +1,15 @@
 import { Estatisticas, Sinistro } from '../type/sinistro.type';
+import { apiAutenticada } from '@/features/auth/api/auth.http';
 
-const API_URL = 'http://localhost:8000/v1/sinistro';
-
+// ETAPA 3 - Consultas do Next sempre enviam a sessao validada; sem acesso anonimo.
 export async function fetchSinistros(): Promise<Sinistro[]> {
-  try {
-    const res = await fetch(API_URL, { cache: 'no-store' });
-    return await res.json();
-  } catch (error: unknown) {
-    console.error('erro ao carregar os sinistros', error);
-    return [];
-  }
+  const resposta = await apiAutenticada('/sinistro');
+  if (!resposta.ok) throw new Error('Falha ao carregar sinistros.');
+  return resposta.json() as Promise<Sinistro[]>;
 }
 
-export async function fetchEstatisticas(): Promise<Estatisticas | null> {
-  try {
-    const res = await fetch(`${API_URL}/estatisticas`, { cache: 'no-store' });
-    return await res.json();
-  } catch (error: unknown) {
-    console.error('erro ao carregar as estatisticas', error);
-    return null;
-  }
+export async function fetchEstatisticas(): Promise<Estatisticas> {
+  const resposta = await apiAutenticada('/sinistro/estatisticas');
+  if (!resposta.ok) throw new Error('Falha ao carregar estatísticas.');
+  return resposta.json() as Promise<Estatisticas>;
 }

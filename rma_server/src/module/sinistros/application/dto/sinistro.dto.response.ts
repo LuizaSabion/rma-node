@@ -15,6 +15,9 @@ export class SinistroResponse {
   dataVencimento!: Date | null;
   prazoGarantiaMeses!: number | null;
   motivoReprovacao!: string | null;
+  // ETAPA 3 - Responsavel atual para exibir e validar operacoes tecnicas.
+  tecnicoResponsavelId!: string | null;
+  tecnicoResponsavelNome!: string | null;
   numeroSerie!: string;
   tipoDefeito!: TipoDefeitoEnum;
   tipoDefeitoNome!: string;

@@ -6,6 +6,8 @@ import { ComprovanteResumo, SinistroEntity } from '../../domain/entity/sinistro.
 // ETAPA 2 - A consulta traz apenas metadados do documento (nunca o arquivo binario).
 export type SinistroComResumoComprovante = PrismaSinistro & {
   comprovante?: ComprovanteResumo | null;
+  // ETAPA 3 - Nome apresentado ao usuario, sem carregar hashes ou sessoes.
+  tecnicoResponsavel?: { nome: string } | null;
 };
 
 // ETAPA 2 - Seleciona somente metadados do comprovante, nunca o bytea.
@@ -47,6 +49,8 @@ export class SinistroMapper {
       raw.tipoDispositivo,
       raw.comprovante ?? null,
       raw.motivoReprovacao,
+      raw.tecnicoResponsavelId,
+      raw.tecnicoResponsavel?.nome ?? null,
     );
   }
 
@@ -77,6 +81,9 @@ export class SinistroMapper {
       tipoDefeito: sinistroEntity.props.tipoDefeito.value,
       tipoDefeitoNome: sinistroEntity.props.tipoDefeito.nome,
       // ETAPA 2 - Metadados de garantia para orientar a conferencia na interface.
+      // ETAPA 3 - Relacionamento usado para impedir laudos de terceiros.
+      tecnicoResponsavelId: sinistroEntity.props.tecnicoResponsavelId,
+      tecnicoResponsavelNome: sinistroEntity.props.tecnicoResponsavelNome,
       comprovanteAnexado: Boolean(sinistroEntity.props.comprovante),
       comprovanteNome: sinistroEntity.props.comprovante?.nomeArquivo ?? null,
       comprovanteConferidoEm: sinistroEntity.props.comprovante?.confirmadoEm ?? null,

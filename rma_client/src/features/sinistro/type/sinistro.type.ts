@@ -1,14 +1,34 @@
 import { SinistroFormData } from '../schema/sinistro.schema';
 
 // ETAPA 1 - Novo estado sincronizado com API e Prisma.
-export type StatusSinistro = 'ABERTO' | 'EM_LABORATORIO' | 'EM_REPARO' | 'REPARADO' | 'SUBSTITUIDO' | 'REPROVADO';
+export type StatusSinistro = 'PENDENTE_COMPROVACAO' | 'ABERTO' | 'EM_LABORATORIO' | 'EM_REPARO' | 'REPARADO' | 'SUBSTITUIDO' | 'REPROVADO';
 export type TipoDefeito = 'TELA' | 'BATERIA' | 'PLACA' | 'CONECTOR' | 'SOFTWARE';
 export type Severidade = 'ALTA' | 'MEDIA' | 'BAIXA';
+// ETAPA 2 - Categorias de garantia definidas para o sistema.
+export type TipoDispositivo = 'FONE_COM_FIO' | 'CELULAR' | 'FONE_BLUETOOTH' | 'NOTEBOOK';
+export const NOMES_TIPO_DISPOSITIVO: Record<TipoDispositivo, string> = {
+  FONE_COM_FIO: 'Fone com fio (6 meses)',
+  CELULAR: 'Celular (12 meses)',
+  FONE_BLUETOOTH: 'Fone Bluetooth (12 meses)',
+  NOTEBOOK: 'Notebook (24 meses)',
+};
 
 export type Sinistro = {
   id: string;
   cliente: string;
   dispositivo: string;
+  // ETAPA 2 - Comprovante e metadados, sem devolver o arquivo na listagem.
+  tipoDispositivo: TipoDispositivo | null;
+  comprovanteAnexado: boolean;
+  comprovanteNome: string | null;
+  comprovanteConferidoEm: string | null;
+  dataCompra: string | null;
+  dataVencimento: string | null;
+  prazoGarantiaMeses: number | null;
+  motivoReprovacao: string | null;
+  // ETAPA 3 - Responsavel tecnico confirmado pelo backend.
+  tecnicoResponsavelId: string | null;
+  tecnicoResponsavelNome: string | null;
   numeroSerie: string;
   tipoDefeito: TipoDefeito;
   tipoDefeitoNome: string;
@@ -23,6 +43,7 @@ export type Sinistro = {
 export type Estatisticas = {
   total: number;
   abertos: number;
+  pendentes: number;
   laboratorio: number;
   emReparo: number;
   reparados: number;
@@ -63,6 +84,8 @@ export const InitialActionSinistroState: ActionState<Sinistro> = {
 };
 
 export const NOMES_STATUS: Record<StatusSinistro, string> = {
+  // ETAPA 2 - Os novos sinistros aguardam a conferencia da nota fiscal.
+  PENDENTE_COMPROVACAO: 'Pendente de comprovante',
   ABERTO: 'Aberto',
   EM_LABORATORIO: 'No laboratório',
   EM_REPARO: 'Em reparo',

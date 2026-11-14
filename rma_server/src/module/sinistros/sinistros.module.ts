@@ -12,6 +12,9 @@ import { UpdateSinistroService } from './application/service/write/update.sinist
 // ETAPA 2 - Novo caso de uso somente para o comprovante, sem criar modulo extra.
 import { ComprovanteGarantiaService } from './application/service/write/comprovante.garantia.service';
 import { ComprovanteGarantiaController } from './presentation/comprovante.garantia.controller';
+// ETAPA 3 - Um unico servico de atribuicao, sem duplicar regras em controller.
+import { AtribuicaoTecnicoService } from './application/service/write/atribuicao.tecnico.service';
+import { AtribuicaoTecnicoController } from './presentation/atribuicao.tecnico.controller';
 import { ESTATISTICAS_SINISTRO_USE_CASE } from './application/use-case/read/estatisticas.sinistro.use-case';
 import { FIND_ALL_SINISTRO_USE_CASE } from './application/use-case/read/findall.sinistro.use-case';
 import { FIND_BY_ID_SINISTRO_USE_CASE } from './application/use-case/read/findbyid.sinistro.use-case';
@@ -49,6 +52,7 @@ const sinistroControllers = [
   ConcluirReparoController,
   // ETAPA 2 - Rotas de upload e conferencia humana da garantia.
   ComprovanteGarantiaController,
+  AtribuicaoTecnicoController,
 ];
 
 const sinistroProviders = [
@@ -63,6 +67,7 @@ const sinistroProviders = [
   // ETAPA 1 - Registra o novo caso de uso sem criar outro módulo.
   { provide: CONCLUIR_REPARO_USE_CASE, useClass: ConcluirReparoService },
   ComprovanteGarantiaService,
+  AtribuicaoTecnicoService,
   { provide: SINISTRO_READ_REPOSITORY, useClass: SinistroPrismaReadRepository },
   { provide: SINISTRO_WRITE_REPOSITORY, useClass: SinistroPrismaWriteRepository },
 ];

@@ -18,6 +18,13 @@ enum StatusSinistro {
   REPROVADO
 }
 
+// ETAPA 3 - Perfil e sessoes reais; nenhuma permissao vem do frontend.
+enum PerfilUsuario {
+  ATENDENTE
+  TECNICO
+  ADMINISTRADOR
+}
+
 // ETAPA 2 - Prazos padrao acordados para cada categoria de aparelho.
 enum TipoDispositivo {
   FONE_COM_FIO
@@ -54,6 +61,10 @@ model Sinistro {
   severidade       Severidade
   status           StatusSinistro @default(PENDENTE_COMPROVACAO)
   laudo            String?
+  // ETAPA 3 - Um sinistro tem no maximo um tecnico responsavel.
+  tecnicoResponsavelId String? @map("tecnico_responsavel_id")
+  tecnicoResponsavel Usuario? @relation("ResponsavelSinistro", fields: [tecnicoResponsavelId], references: [id], onDelete: SetNull)
+  atribuicoes       MovimentacaoTecnico[]
   // ETAPA 2 - Uma solicitacao pode ter um comprovante de compra.
   comprovante      ComprovanteGarantia?
   motivoReprovacao String? @map("motivo_reprovacao")
@@ -62,6 +73,7 @@ model Sinistro {
 
   @@index([numeroSerie])
   @@index([status])
+  @@index([tecnicoResponsavelId])
   @@map("sinistros")
 }
 
@@ -82,4 +94,51 @@ model ComprovanteGarantia {
   sinistro            Sinistro @relation(fields: [sinistroId], references: [id], onDelete: Cascade)
 
   @@map("comprovantes_garantia")
+}
+
+// ETAPA 3 - Usuarios cadastrados pelo administrador; senha apenas como hash.
+model Usuario {
+  id          String        @id @default(uuid())
+  nome        String
+  email       String        @unique
+  senhaHash   String        @map("senha_hash")
+  perfil      PerfilUsuario
+  ativo       Boolean       @default(true)
+  createdAt   DateTime      @default(now()) @map("created_at")
+  sinistros   Sinistro[]    @relation("ResponsavelSinistro")
+  sessoes     Sessao[]
+  historicoComoAnterior MovimentacaoTecnico[] @relation("TecnicoAnterior")
+  historicoComoNovo     MovimentacaoTecnico[] @relation("TecnicoNovo")
+  historicoComoAutor    MovimentacaoTecnico[] @relation("AutorMovimentacao")
+
+  @@map("usuarios")
+}
+
+// ETAPA 3 - Tokens aleatorios sao armazenados somente como SHA-256.
+model Sessao {
+  id          String   @id @default(uuid())
+  usuarioId   String   @map("usuario_id")
+  tokenHash   String   @unique @map("token_hash")
+  expiraEm    DateTime @map("expira_em")
+  usuario     Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  @@index([usuarioId])
+  @@map("sessoes")
+}
+
+// ETAPA 3 - Auditoria MINIMA da atribuicao/transferencia (audit log completo: etapa futura).
+model MovimentacaoTecnico {
+  id                 String   @id @default(uuid())
+  sinistroId         String   @map("sinistro_id")
+  responsavelAnteriorId String? @map("responsavel_anterior_id")
+  responsavelNovoId  String   @map("responsavel_novo_id")
+  autorId            String   @map("autor_id")
+  justificativa      String
+  criadoEm           DateTime @default(now()) @map("criado_em")
+  sinistro           Sinistro @relation(fields: [sinistroId], references: [id], onDelete: Cascade)
+  // ETAPA 3 - Chaves estrangeiras identificam os usuarios envolvidos na transferencia.
+  responsavelAnterior Usuario? @relation("TecnicoAnterior", fields: [responsavelAnteriorId], references: [id], onDelete: Restrict)
+  responsavelNovo Usuario @relation("TecnicoNovo", fields: [responsavelNovoId], references: [id], onDelete: Restrict)
+  autor Usuario @relation("AutorMovimentacao", fields: [autorId], references: [id], onDelete: Restrict)
+  @@index([sinistroId])
+  @@map("movimentacoes_tecnico")
 }

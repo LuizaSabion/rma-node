@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { NaoEncontradoError } from '../../../../../shared/domain/errors/domain.errors';
 import { SINISTRO_READ_REPOSITORY, SinistroReadRepository } from '../../../domain/ports/sinistro.read.repository';
 import { SINISTRO_WRITE_REPOSITORY, SinistroWriteRepository } from '../../../domain/ports/sinistro.write.repository';
@@ -15,15 +15,20 @@ export class ConcluirReparoService implements ConcluirReparoUseCase {
     private readonly writeRepository: SinistroWriteRepository,
   ) {}
 
-  async execute(id: string): Promise<SinistroResponse> {
+  async execute(id: string, usuarioId: string): Promise<SinistroResponse> {
     const sinistroEntity = await this.readRepository.findSinistroById(id);
     if (!sinistroEntity) {
       throw new NaoEncontradoError('Sinistro não encontrado.');
     }
+    // ETAPA 3 - Conferencia no Application, alem do RBAC do controller.
+    // O tecnico so pode agir sobre o sinistro que ele mesmo assumiu.
+    if (sinistroEntity.props.tecnicoResponsavelId !== usuarioId) {
+      throw new ForbiddenException('Somente o técnico responsável pode realizar esta ação.');
+    }
 
     // ETAPA 1 - O Domain valida a transição EM_REPARO -> REPARADO e o laudo.
     sinistroEntity.concluirReparo();
-    const atualizado = await this.writeRepository.updateSinistro(id, sinistroEntity);
+    const atualizado = await this.writeRepository.updateSinistroComoTecnico(id, sinistroEntity, usuarioId);
     return SinistroMapper.toSinistroResponseFromSinistroEntity(atualizado);
   }
 }

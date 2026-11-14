@@ -17,6 +17,7 @@ import { emitirLaudo } from '../api/sinistro.actions';
 import { LaudoFormData, laudoSchema } from '../schema/sinistro.schema';
 import { InitialActionSinistroState, SinistroActionDialogProps } from '../type/sinistro.type';
 import { SeveridadeTag, StatusBadge } from './StatusBadge';
+import type { Usuario } from '@/features/auth/type/auth.type';
 
 const DECISOES = [
   // ETAPA 1 - Selecionar reparar inicia EM_REPARO. Não conclui a manutenção.
@@ -25,7 +26,7 @@ const DECISOES = [
   { valor: 'REPROVADO', titulo: 'Reprovar', texto: 'Defeito não coberto pela garantia (mau uso, queda...).' },
 ] as const;
 
-export function LaudoDialog({ isOpen, onOpenChange, sinistro, onFeedback }: SinistroActionDialogProps) {
+export function LaudoDialog({ isOpen, onOpenChange, sinistro, onFeedback, usuario }: SinistroActionDialogProps & { usuario: Usuario }) {
   const [state, formAction, isPending] = useActionState(emitirLaudo, InitialActionSinistroState);
 
   const form = useForm<LaudoFormData>({
@@ -62,7 +63,9 @@ export function LaudoDialog({ isOpen, onOpenChange, sinistro, onFeedback }: Sini
   };
 
   if (!sinistro) return null;
-  const podeEmitir = sinistro.status === 'EM_LABORATORIO';
+  // ETAPA 3 - Apenas responsavel tecnico pode emitir; backend repete a verificacao.
+  const podeEmitir = sinistro.status === 'EM_LABORATORIO' && usuario.perfil === 'TECNICO'
+    && sinistro.tecnicoResponsavelId === usuario.id;
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>

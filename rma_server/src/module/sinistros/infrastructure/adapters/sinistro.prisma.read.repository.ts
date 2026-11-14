@@ -12,7 +12,7 @@ export class SinistroPrismaReadRepository implements SinistroReadRepository {
   async findSinistroAll(status?: SinistroStatusEnum): Promise<SinistroEntity[]> {
     const sinistros = await this.prisma.sinistro.findMany({
       where: status ? { status } : {},
-      include: { comprovante: { select: comprovanteResumoSelect } },
+      include: { comprovante: { select: comprovanteResumoSelect }, tecnicoResponsavel: { select: { nome: true } } },
       // ALTA primeiro, depois os mais antigos
       orderBy: [{ severidade: 'asc' }, { createdAt: 'asc' }],
     });

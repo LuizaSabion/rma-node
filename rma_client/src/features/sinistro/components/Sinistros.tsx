@@ -22,6 +22,11 @@ import { SinistroFormData } from '../schema/sinistro.schema';
 import { Estatisticas, Feedback, InitialActionSinistroState, Sinistro, StatusSinistro } from '../type/sinistro.type';
 import { EstatisticasCards } from './EstatisticasCards';
 import { LaudoDialog } from './LaudoDialog';
+import { ComprovanteDialog } from './ComprovanteDialog';
+import { TecnicoDialog } from './TecnicoDialog';
+import type { Usuario, Tecnico } from '@/features/auth/type/auth.type';
+import { sair } from '@/features/auth/api/auth.actions';
+import Link from 'next/link';
 import { getSinistroColumns } from './sinistro-columns';
 import { SinistroCreateDialog } from './SinistroCreateDialog';
 import { SinistroDeleteDialog } from './SinistroDeleteDialog';
@@ -30,9 +35,12 @@ import { SinistroUpdateDialog } from './SinistroUpdateDialog';
 export interface SinistroProps {
   sinistros: Sinistro[];
   estatisticas: Estatisticas | null;
+  // ETAPA 3 - Perfil autenticado e lista de tecnicos ativos vem do backend.
+  usuario: Usuario;
+  tecnicos: Tecnico[];
 }
 
-export default function SinistrosPages({ sinistros, estatisticas }: SinistroProps) {
+export default function SinistrosPages({ sinistros, estatisticas, usuario, tecnicos }: SinistroProps) {
   const [globalFilter, setGlobalFilter] = useState('');
   const [sorting, setSorting] = useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -41,6 +49,11 @@ export default function SinistrosPages({ sinistros, estatisticas }: SinistroProp
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isLaudoOpen, setIsLaudoOpen] = useState(false);
+  // ETAPA 2 - Dialog separado para conferencia de nota fiscal.
+  const [isComprovanteOpen, setIsComprovanteOpen] = useState(false);
+  // ETAPA 3 - Um dialog para atribuicao inicial ou transferencia.
+  const [isTecnicoOpen, setIsTecnicoOpen] = useState(false);
+  const [modoTecnico, setModoTecnico] = useState<'atribuir' | 'transferir'>('atribuir');
   const [selectedSinistro, setSelectedSinistro] = useState<Sinistro | null>(null);
 
   const [feedback, setFeedback] = useState<Feedback | null>(null);
@@ -62,6 +75,22 @@ export default function SinistrosPages({ sinistros, estatisticas }: SinistroProp
   const handleOpenDelete = useCallback((sinistro: Sinistro) => {
     setSelectedSinistro(sinistro);
     setIsDeleteOpen(true);
+  }, []);
+
+  const handleOpenComprovante = useCallback((sinistro: Sinistro) => {
+    setSelectedSinistro(sinistro);
+    setIsComprovanteOpen(true);
+  }, []);
+
+  const handleOpenAtribuir = useCallback((sinistro: Sinistro) => {
+    setSelectedSinistro(sinistro);
+    setModoTecnico('atribuir');
+    setIsTecnicoOpen(true);
+  }, []);
+  const handleOpenTransferir = useCallback((sinistro: Sinistro) => {
+    setSelectedSinistro(sinistro);
+    setModoTecnico('transferir');
+    setIsTecnicoOpen(true);
   }, []);
 
   const handleOpenLaudo = useCallback((sinistro: Sinistro) => {
@@ -96,13 +125,17 @@ export default function SinistrosPages({ sinistros, estatisticas }: SinistroProp
   const columns = useMemo<ColumnDef<Sinistro>[]>(
     () =>
       getSinistroColumns({
+        usuario,
+        onAtribuir: handleOpenAtribuir,
+        onTransferir: handleOpenTransferir,
         onEdit: handleOpenUpdate,
         onDelete: handleOpenDelete,
         onEnviarLaboratorio: handleEnviarLaboratorio,
         onLaudo: handleOpenLaudo,
+        onComprovante: handleOpenComprovante,
         onConcluirReparo: handleConcluirReparo,
       }),
-    [handleOpenUpdate, handleOpenDelete, handleEnviarLaboratorio, handleOpenLaudo, handleConcluirReparo],
+    [usuario, handleOpenAtribuir, handleOpenTransferir, handleOpenUpdate, handleOpenDelete, handleEnviarLaboratorio, handleOpenLaudo, handleOpenComprovante, handleConcluirReparo],
   );
 
   const table = useReactTable({
@@ -135,6 +168,14 @@ export default function SinistrosPages({ sinistros, estatisticas }: SinistroProp
 
   return (
     <div className="w-full space-y-6">
+      {/* ETAPA 3 - Sessao e gestao acessiveis sem expor token no navegador. */}
+      <div className="flex items-center justify-between gap-3 rounded-lg border bg-card p-3 text-sm">
+        <span><strong>{usuario.nome}</strong> · {usuario.perfil}</span>
+        <div className="flex items-center gap-4">
+          {usuario.perfil === 'ADMINISTRADOR' && <Link className="underline" href="/usuarios">Gerenciar usuários</Link>}
+          <form action={sair}><button type="submit" className="underline">Sair</button></form>
+        </div>
+      </div>
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold">Fila de sinistros</h1>
@@ -142,9 +183,9 @@ export default function SinistrosPages({ sinistros, estatisticas }: SinistroProp
             Pedidos de garantia ordenados por severidade e data de abertura.
           </p>
         </div>
-        <Button size="lg" className="px-4" onClick={() => setIsCreateOpen(true)}>
+        {usuario.perfil === 'ATENDENTE' && <Button size="lg" className="px-4" onClick={() => setIsCreateOpen(true)}>
           <Plus /> Novo pedido
-        </Button>
+        </Button>}
       </div>
 
       {/* Barra de alert feedback */}
@@ -254,7 +295,18 @@ export default function SinistrosPages({ sinistros, estatisticas }: SinistroProp
         onFeedback={handleFeedback}
       />
 
+      <ComprovanteDialog
+        isOpen={isComprovanteOpen}
+        onOpenChange={setIsComprovanteOpen}
+        sinistro={selectedSinistro}
+        onFeedback={handleFeedback}
+      />
+
+      <TecnicoDialog sinistro={selectedSinistro} open={isTecnicoOpen} onOpenChange={setIsTecnicoOpen}
+        usuario={usuario} tecnicos={tecnicos} modo={modoTecnico} onFeedback={handleFeedback}/>
+
       <LaudoDialog
+        usuario={usuario}
         isOpen={isLaudoOpen}
         onOpenChange={setIsLaudoOpen}
         sinistro={selectedSinistro}

@@ -27,6 +27,9 @@ export type SinistroProps = {
   tipoDispositivo: TipoDispositivoEnum | null;
   comprovante: ComprovanteResumo | null;
   motivoReprovacao: string | null;
+  // ETAPA 3 - Autorizar laudo somente do tecnico vinculado ao sinistro.
+  tecnicoResponsavelId: string | null;
+  tecnicoResponsavelNome: string | null;
   numeroSerie: NumeroSerie;
   tipoDefeito: TipoDefeito;
   descricaoDefeito: string;
@@ -61,6 +64,8 @@ export class SinistroEntity extends BaseEntity<SinistroProps> {
       tipoDispositivo: validarTipoDispositivo(dados.tipoDispositivo),
       comprovante: null,
       motivoReprovacao: null,
+      tecnicoResponsavelId: null,
+      tecnicoResponsavelNome: null,
       numeroSerie: NumeroSerie.create(dados.numeroSerie),
       tipoDefeito,
       descricaoDefeito: SinistroEntity.validarDescricao(dados.descricaoDefeito),
@@ -86,6 +91,8 @@ export class SinistroEntity extends BaseEntity<SinistroProps> {
     tipoDispositivo: string | null = null,
     comprovante: ComprovanteResumo | null = null,
     motivoReprovacao: string | null = null,
+    tecnicoResponsavelId: string | null = null,
+    tecnicoResponsavelNome: string | null = null,
   ): SinistroEntity {
     return new SinistroEntity({
       id,
@@ -94,6 +101,8 @@ export class SinistroEntity extends BaseEntity<SinistroProps> {
       tipoDispositivo: tipoDispositivo ? validarTipoDispositivo(tipoDispositivo) : null,
       comprovante,
       motivoReprovacao,
+      tecnicoResponsavelId,
+      tecnicoResponsavelNome,
       numeroSerie: NumeroSerie.create(numeroSerie),
       tipoDefeito: TipoDefeito.create(tipoDefeito),
       descricaoDefeito,

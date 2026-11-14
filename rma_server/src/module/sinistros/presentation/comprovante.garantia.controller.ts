@@ -1,8 +1,12 @@
 import { Body, Controller, Param, Patch, Post, UploadedFile, UseInterceptors } from '@nestjs/common';
+// ETAPA 3 - Bloqueio RBAC no backend, nunca apenas no botao da tela.
+import { PerfilUsuario } from '@prisma/client';
+import { Perfis, UsuarioAtual, UsuarioAutenticado } from '../../auth/auth.roles';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { ComprovanteGarantiaService, ArquivoRecebido } from '../application/service/write/comprovante.garantia.service';
 import { SinistroResponse } from '../application/dto/sinistro.dto.response';
 
+@Perfis(PerfilUsuario.ATENDENTE)
 @Controller('sinistro')
 export class ComprovanteGarantiaController {
   constructor(private readonly service: ComprovanteGarantiaService) {}

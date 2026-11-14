@@ -4,5 +4,5 @@ import { SinistroResponse } from '../../dto/sinistro.dto.response';
 export const CONCLUIR_REPARO_USE_CASE = 'CONCLUIR_REPARO_USE_CASE';
 
 export interface ConcluirReparoUseCase {
-  execute(id: string): Promise<SinistroResponse>;
+  execute(id: string, usuarioId: string): Promise<SinistroResponse>;
 }

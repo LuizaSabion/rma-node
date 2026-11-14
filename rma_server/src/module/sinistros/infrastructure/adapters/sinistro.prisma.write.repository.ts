@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../../../../database/prisma.service';
 import { SinistroEntity } from '../../domain/entity/sinistro.entity';
 import { ArquivoComprovante, SinistroWriteRepository } from '../../domain/ports/sinistro.write.repository';
@@ -22,6 +22,18 @@ export class SinistroPrismaWriteRepository implements SinistroWriteRepository {
       data,
     });
     return SinistroMapper.toSinistroEntityFromSinistroPrisma(sinistroUpdate);
+  }
+
+  // ETAPA 3 - Atualizacao do laudo/reparo so acontece se o tecnico ainda for o responsavel.
+  async updateSinistroComoTecnico(id: string, entidade: SinistroEntity, tecnicoId: string): Promise<SinistroEntity> {
+    const { id: _id, ...data } = SinistroMapper.toSinistroFromSinistroEntity(entidade);
+    const atualizado = await this.prisma.sinistro.updateMany({
+      where: { id, tecnicoResponsavelId: tecnicoId }, data,
+    });
+    if (!atualizado.count) throw new ConflictException('Responsável técnico mudou. Atualize o sinistro.');
+    const salvo = await this.prisma.sinistro.findUniqueOrThrow({ where: { id },
+      include: { comprovante: { select: comprovanteResumoSelect }, tecnicoResponsavel: { select: { nome: true } } } });
+    return SinistroMapper.toSinistroEntityFromSinistroPrisma(salvo);
   }
 
   // ETAPA 2 - Documento e status sao persistidos juntos.
